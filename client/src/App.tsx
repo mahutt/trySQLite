@@ -3,6 +3,7 @@ import TableView, { Table } from './components/table'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { RocketIcon } from '@radix-ui/react-icons'
 
 interface Database {
   tables: Table[]
@@ -63,7 +64,15 @@ function App() {
             }}
             placeholder="Enter a query"
           />
-
+          {database.tables.length === 0 && (
+            <Alert>
+              <RocketIcon className="h-4 w-4" />
+              <AlertTitle>No data!</AlertTitle>
+              <AlertDescription>
+                Start writing queries to populate your database.
+              </AlertDescription>
+            </Alert>
+          )}
           <Tabs
             key={database.tables[0]?.name ?? 'none'}
             defaultValue={database.tables[0]?.name ?? 'none'}
@@ -75,6 +84,11 @@ function App() {
                   {table.name}
                 </TabsTrigger>
               ))}
+              {database.tables.length === 0 && (
+                <TabsTrigger value="none" disabled>
+                  No tables
+                </TabsTrigger>
+              )}
             </TabsList>
             {database.tables.map((table) => (
               <TabsContent key={table.name} value={table.name}>
