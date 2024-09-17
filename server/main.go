@@ -93,7 +93,7 @@ func main() {
 	e := echo.New()
 	e.Use(middleware.CORS())
 
-	e.GET("/", func(c echo.Context) error {
+	e.GET("/api", func(c echo.Context) error {
 		tables, err := getDatabaseInfo()
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
@@ -101,7 +101,7 @@ func main() {
 		return c.JSON(http.StatusOK, map[string]interface{}{"tables": tables})
 	})
 
-	e.POST("/", func(c echo.Context) error {
+	e.POST("/api", func(c echo.Context) error {
 		var requestBody struct {
 			Query string `json:"query"`
 		}

@@ -17,14 +17,14 @@ function App() {
   })
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}`)
+    fetch(`${import.meta.env.VITE_API_URL}/api`)
       .then((response) => response.json())
       .then((data) => setDatabase({ tables: data.tables }))
       .catch((error) => console.error('Error fetching data:', error))
   }, [])
 
   const runQuery = () => {
-    fetch(`${import.meta.env.VITE_API_URL}`, {
+    fetch(`${import.meta.env.VITE_API_URL}/api`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
