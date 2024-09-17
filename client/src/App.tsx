@@ -1,33 +1,89 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import { Button } from '@/components/ui/button'
+import { useState, useEffect } from 'react'
+import TableView, { Table } from './components/table'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Input } from '@/components/ui/input'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+
+interface Database {
+  tables: Table[]
+}
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [query, setQuery] = useState('')
+  const [error, setError] = useState('')
+  const [database, setDatabase] = useState<Database>({
+    tables: [],
+  })
+
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL}`)
+      .then((response) => response.json())
+      .then((data) => setDatabase({ tables: data.tables }))
+      .catch((error) => console.error('Error fetching data:', error))
+  }, [])
+
+  const runQuery = () => {
+    fetch(`${import.meta.env.VITE_API_URL}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.error) {
+          setError(data.error)
+        } else {
+          setError('')
+          setDatabase({ tables: data.tables })
+        }
+        setQuery('')
+      })
+      .catch((error) => console.error('Error fetching data:', error))
+  }
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <main className="flex flex-col align-center gap-10 py-10">
+          {error && (
+            <Alert variant="destructive">
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                runQuery()
+              }
+            }}
+            placeholder="Enter a query"
+          />
+
+          <Tabs
+            key={database.tables[0]?.name ?? 'none'}
+            defaultValue={database.tables[0]?.name ?? 'none'}
+            className="w-full"
+          >
+            <TabsList>
+              {database.tables.map((table) => (
+                <TabsTrigger key={table.name} value={table.name}>
+                  {table.name}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            {database.tables.map((table) => (
+              <TabsContent key={table.name} value={table.name}>
+                <TableView table={table} />
+              </TabsContent>
+            ))}
+          </Tabs>
+        </main>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <Button onClick={() => setCount((count) => count + 1)}>
-          count is {count}!
-        </Button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
   )
 }
