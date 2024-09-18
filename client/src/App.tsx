@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import TableView, { Table } from './components/table'
+import { QueryTextarea } from './components/query-textarea'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { RocketIcon } from '@radix-ui/react-icons'
 
@@ -54,15 +54,10 @@ function App() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                runQuery()
-              }
-            }}
-            placeholder="Enter a query"
+          <QueryTextarea
+            query={query}
+            setQuery={setQuery}
+            runQuery={runQuery}
           />
           {database.tables.length === 0 && (
             <Alert>
