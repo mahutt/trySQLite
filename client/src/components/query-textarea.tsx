@@ -13,16 +13,21 @@ export function QueryTextarea({
   runQuery,
 }: QueryTextareaProps) {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
       runQuery()
-    } else if (e.key === ' ') {
+    } else if (e.key === ' ' || e.key === 'Enter') {
       if (query.trim() === '') return
-      const words = query.split(' ')
-      const lastWord = words[words.length - 1]
-      if (keywords.has(lastWord.toUpperCase())) {
-        words[words.length - 1] = lastWord.toUpperCase()
-        setQuery(words.join(' '))
+      const parts = query.split(/(\s+)/)
+      for (let i = 0; i < parts.length; i += 2) {
+        const word = parts[i]
+        if (keywords.has(word.toUpperCase())) {
+          parts[i] = word.toUpperCase()
+        }
       }
+      setQuery(parts.join(''))
+    } else if (e.key === 'Tab') {
+      e.preventDefault()
+      setQuery(query + '\t')
     }
   }
   return (
@@ -31,6 +36,7 @@ export function QueryTextarea({
       onChange={(e) => setQuery(e.target.value)}
       onKeyDown={handleKeyDown}
       placeholder="Enter a query"
+      style={{ fontFamily: 'monospace' }}
     />
   )
 }
