@@ -1,13 +1,10 @@
 import { useState, useEffect } from 'react'
-import TableView, { Table } from './components/table'
 import { QueryTextarea } from './components/query-textarea'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { RocketIcon } from '@radix-ui/react-icons'
 
-interface Database {
-  tables: Table[]
-}
+import DatabaseView, { Database } from '@/components/database-view'
 
 function App() {
   const [query, setQuery] = useState('')
@@ -68,28 +65,17 @@ function App() {
               </AlertDescription>
             </Alert>
           )}
-          <Tabs
-            key={database.tables[0]?.name ?? 'none'}
-            defaultValue={database.tables[0]?.name ?? 'none'}
-            className="w-full"
-          >
+          <Tabs key="top" defaultValue="database">
             <TabsList>
-              {database.tables.map((table) => (
-                <TabsTrigger key={table.name} value={table.name}>
-                  {table.name}
-                </TabsTrigger>
-              ))}
-              {database.tables.length === 0 && (
-                <TabsTrigger value="none" disabled>
-                  No tables
-                </TabsTrigger>
-              )}
+              <TabsTrigger value="results">Results</TabsTrigger>
+              <TabsTrigger value="database">Database</TabsTrigger>
+              <TabsTrigger value="logs">Logs</TabsTrigger>
             </TabsList>
-            {database.tables.map((table) => (
-              <TabsContent key={table.name} value={table.name}>
-                <TableView table={table} />
-              </TabsContent>
-            ))}
+            <TabsContent value="results">Query results placeholder</TabsContent>
+            <TabsContent value="database">
+              <DatabaseView database={database} />
+            </TabsContent>
+            <TabsContent value="logs">Logs results placeholder</TabsContent>
           </Tabs>
         </main>
       </div>
