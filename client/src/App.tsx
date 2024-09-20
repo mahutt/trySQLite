@@ -1,24 +1,34 @@
 import { useState, useEffect } from 'react'
 import { QueryTextarea } from './components/query-textarea'
+import ResultsView from '@/components/results-view'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { RocketIcon } from '@radix-ui/react-icons'
 
 import DatabaseView, { Database } from '@/components/database-view'
+import { Table } from '@/components/table'
 
 function App() {
   const [query, setQuery] = useState('')
   const [error, setError] = useState('')
+  const [results, setResults] = useState<Table>({
+    name: 'Results',
+    columns: [],
+    rows: [],
+  })
+  const [syncing, setSyncing] = useState(true)
   const [database, setDatabase] = useState<Database>({
     tables: [],
   })
 
   useEffect(() => {
+    if (!syncing) return
     fetch(`${import.meta.env.VITE_API_URL}/api`)
       .then((response) => response.json())
       .then((data) => setDatabase({ tables: data.tables }))
       .catch((error) => console.error('Error fetching data:', error))
-  }, [])
+      .finally(() => setSyncing(false))
+  }, [syncing])
 
   const runQuery = () => {
     fetch(`${import.meta.env.VITE_API_URL}/api`, {
@@ -34,7 +44,10 @@ function App() {
           setError(data.error)
         } else {
           setError('')
-          setDatabase({ tables: data.tables })
+          if (data.results.columns && data.results.rows) {
+            setResults(data.results)
+          }
+          setSyncing(true)
         }
         setQuery('')
       })
@@ -71,7 +84,9 @@ function App() {
               <TabsTrigger value="database">Database</TabsTrigger>
               <TabsTrigger value="logs">Logs</TabsTrigger>
             </TabsList>
-            <TabsContent value="results">Query results placeholder</TabsContent>
+            <TabsContent value="results">
+              <ResultsView results={results} />
+            </TabsContent>
             <TabsContent value="database">
               <DatabaseView database={database} />
             </TabsContent>

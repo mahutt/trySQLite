@@ -83,6 +83,39 @@ func getDatabaseInfo() ([]map[string]interface{}, error) {
 	return tables, nil
 }
 
+func executeQuery(query string) (map[string]interface{}, error) {
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute query: %v", err)
+	}
+	defer rows.Close()
+
+	columns, err := rows.Columns()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get columns: %v", err)
+	}
+
+	rawRows := make([][]interface{}, 0)
+	for rows.Next() {
+		rowValues := make([]interface{}, len(columns))
+		rowPointers := make([]interface{}, len(columns))
+		for i := range rowValues {
+			rowPointers[i] = &rowValues[i]
+		}
+		if err := rows.Scan(rowPointers...); err != nil {
+			return nil, fmt.Errorf("failed to scan row: %v", err)
+		}
+		rawRows = append(rawRows, rowValues)
+	}
+
+	result := map[string]interface{}{
+		"columns": columns,
+		"rows":    rawRows,
+	}
+
+	return result, nil
+}
+
 func main() {
 	err := initDB("./database.sqlite")
 	if err != nil {
@@ -110,17 +143,12 @@ func main() {
 			return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
 		}
 
-		_, err := db.Exec(requestBody.Query)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, map[string]string{"error": fmt.Sprintf("Failed to execute query: %v", err)})
-		}
-
-		tables, err := getDatabaseInfo()
+		results, err := executeQuery(requestBody.Query)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		}
 
-		return c.JSON(http.StatusOK, map[string]interface{}{"tables": tables})
+		return c.JSON(http.StatusOK, map[string]interface{}{"results": results})
 	})
 
 	e.Logger.Fatal(e.Start(":8080"))
