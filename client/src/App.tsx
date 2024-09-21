@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { RocketIcon } from '@radix-ui/react-icons'
 
 import DatabaseView, { Database } from '@/components/database-view'
+import Logs, { Log } from '@/components/logs'
 import { Table } from '@/components/table'
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
   const [database, setDatabase] = useState<Database>({
     tables: [],
   })
+  const [logs, setLogs] = useState<Log[]>([])
 
   useEffect(() => {
     if (!syncing) return
@@ -49,6 +51,10 @@ function App() {
           }
           setSyncing(true)
         }
+        setLogs((logs) => [
+          ...logs,
+          { query, status: data.error ? 'error' : 'success' },
+        ])
         setQuery('')
       })
       .catch((error) => console.error('Error fetching data:', error))
@@ -90,7 +96,9 @@ function App() {
             <TabsContent value="database">
               <DatabaseView database={database} />
             </TabsContent>
-            <TabsContent value="logs">Logs results placeholder</TabsContent>
+            <TabsContent value="logs">
+              <Logs logs={logs} />
+            </TabsContent>
           </Tabs>
         </main>
       </div>
