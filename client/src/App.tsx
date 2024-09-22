@@ -11,7 +11,7 @@ import { Table } from '@/components/table'
 
 function App() {
   const [query, setQuery] = useState('')
-  const [error, setError] = useState('')
+  const [tab, setTab] = useState('results')
   const [results, setResults] = useState<Table>({
     name: 'Results',
     columns: [],
@@ -43,11 +43,13 @@ function App() {
       .then((response) => response.json())
       .then((data) => {
         if (data.error) {
-          setError(data.error)
+          setTab('logs')
         } else {
-          setError('')
           if (data.results.columns && data.results.rows) {
             setResults(data.results)
+            setTab('results')
+          } else {
+            setTab('database')
           }
           setSyncing(true)
         }
@@ -64,12 +66,6 @@ function App() {
     <>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <main className="flex flex-col align-center gap-10 py-10">
-          {error && (
-            <Alert variant="destructive">
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
           <QueryTextarea
             query={query}
             setQuery={setQuery}
@@ -84,7 +80,12 @@ function App() {
               </AlertDescription>
             </Alert>
           )}
-          <Tabs key="top" defaultValue="database">
+          <Tabs
+            key="top"
+            defaultValue="database"
+            value={tab}
+            onValueChange={setTab}
+          >
             <TabsList>
               <TabsTrigger value="results">Results</TabsTrigger>
               <TabsTrigger value="database">Database</TabsTrigger>
