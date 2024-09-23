@@ -1,6 +1,6 @@
 export interface Log {
   query: string
-  status: 'success' | 'error'
+  error?: string
 }
 
 export default function Logs({ logs }: { logs: Log[] }) {
@@ -16,10 +16,10 @@ export default function Logs({ logs }: { logs: Log[] }) {
           </p>
           <p
             className={`text-sm ${
-              log.status === 'success' ? 'text-green-500' : 'text-red-500'
+              log.error === undefined ? 'text-green-500' : 'text-red-500'
             }`}
           >
-            {log.status}
+            {log.error === undefined ? 'Success' : log.error}
           </p>
         </div>
       ))}

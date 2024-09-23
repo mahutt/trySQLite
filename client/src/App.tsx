@@ -42,7 +42,9 @@ function App() {
     })
       .then((response) => response.json())
       .then((data) => {
+        const log: Log = { query }
         if (data.error) {
+          log.error = data.error
           setTab('logs')
         } else {
           if (data.results.columns && data.results.rows) {
@@ -53,10 +55,7 @@ function App() {
           }
           setSyncing(true)
         }
-        setLogs((logs) => [
-          ...logs,
-          { query, status: data.error ? 'error' : 'success' },
-        ])
+        setLogs((logs) => [log, ...logs])
         setQuery('')
       })
       .catch((error) => console.error('Error fetching data:', error))
