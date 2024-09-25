@@ -1,6 +1,7 @@
 export interface Log {
   query: string
   error?: string
+  executionTime: number
 }
 
 export default function Logs({ logs }: { logs: Log[] }) {
@@ -21,13 +22,16 @@ export default function Logs({ logs }: { logs: Log[] }) {
           <p className="text-sm text-gray-500">
             {log.query.replace(/\s+/g, ' ')}
           </p>
-          <p
-            className={`text-sm ${
-              log.error === undefined ? 'text-green-500' : 'text-red-500'
-            }`}
-          >
-            {log.error === undefined ? 'Success' : log.error}
-          </p>
+          <div className="flex flex-row justify-between gap-4">
+            <p
+              className={`text-sm truncate ${
+                log.error === undefined ? 'text-green-500' : 'text-red-500'
+              }`}
+            >
+              {log.error === undefined ? 'Success' : log.error}
+            </p>
+            <p className="text-sm text-gray-500">{log.executionTime}ms</p>
+          </div>
         </div>
       ))}
     </div>

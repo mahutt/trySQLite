@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -143,12 +144,17 @@ func main() {
 			return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
 		}
 
+		startTime := time.Now()
 		results, err := executeQuery(requestBody.Query)
+		executionTime := time.Since(startTime).Milliseconds()
+		response := map[string]interface{}{"executionTime": executionTime}
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			response["error"] = err.Error()
+			return c.JSON(http.StatusInternalServerError, response)
 		}
 
-		return c.JSON(http.StatusOK, map[string]interface{}{"results": results})
+		response["results"] = results
+		return c.JSON(http.StatusOK, response)
 	})
 
 	e.Logger.Fatal(e.Start(":8080"))

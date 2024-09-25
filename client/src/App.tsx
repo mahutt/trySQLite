@@ -42,7 +42,7 @@ function App() {
     })
       .then((response) => response.json())
       .then((data) => {
-        const log: Log = { query }
+        const log: Log = { query, executionTime: data.executionTime }
         if (data.error) {
           log.error = data.error
           setTab('logs')
