@@ -4,6 +4,13 @@ export interface Log {
 }
 
 export default function Logs({ logs }: { logs: Log[] }) {
+  if (logs.length === 0) {
+    return (
+      <div className="flex justify-center py-6">
+        <p className="text-slate-500">Write a query to populate this space.</p>
+      </div>
+    )
+  }
   return (
     <div className="flex flex-col gap-2">
       {logs.map((log, i) => (
