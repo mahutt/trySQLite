@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import useLocalStorage from 'use-local-storage'
 import { QueryTextarea } from './components/query-textarea'
 import ResultsView from '@/components/results-view'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -21,7 +22,7 @@ function App() {
   const [database, setDatabase] = useState<Database>({
     tables: [],
   })
-  const [logs, setLogs] = useState<Log[]>([])
+  const [logs, setLogs] = useLocalStorage<Log[]>('query-logs', [])
 
   useEffect(() => {
     if (!syncing) return
@@ -55,7 +56,7 @@ function App() {
           }
           setSyncing(true)
         }
-        setLogs((logs) => [log, ...logs])
+        setLogs((logs) => [log, ...(logs ?? [])])
         setQuery('')
       })
       .catch((error) => console.error('Error fetching data:', error))
