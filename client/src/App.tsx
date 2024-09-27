@@ -98,7 +98,7 @@ function App() {
               <DatabaseView database={database} />
             </TabsContent>
             <TabsContent value="logs">
-              <Logs logs={logs} />
+              <Logs logs={logs} setLogs={setLogs} />
             </TabsContent>
           </Tabs>
         </main>
