@@ -12,7 +12,7 @@ import { Table } from '@/components/table'
 
 function App() {
   const [query, setQuery] = useState('')
-  const [tab, setTab] = useState('results')
+  const [tab, setTab] = useLocalStorage<string>('current-tab', 'results')
   const [results, setResults] = useState<Table>({
     name: 'Results',
     columns: [],

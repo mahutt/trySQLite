@@ -1,15 +1,21 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import TableView, { Table } from '@/components/table'
+import useLocalStorage from 'use-local-storage'
 
 export interface Database {
   tables: Table[]
 }
 
 export default function DatabaseView({ database }: { database: Database }) {
+  const [table, setTable] = useLocalStorage<string>(
+    'current-table',
+    database.tables[0]?.name ?? 'none'
+  )
   return (
     <Tabs
-      key={database.tables[0]?.name ?? 'none'}
       defaultValue={database.tables[0]?.name ?? 'none'}
+      value={table}
+      onValueChange={setTable}
       className="w-full shadow-sm border border-gray-200 rounded-xl p-4"
     >
       <TabsList>
