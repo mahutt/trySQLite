@@ -93,6 +93,10 @@ func deleteStaleDatabases(db *sql.DB) error {
 			return err
 		}
 		dbPath := fmt.Sprintf("./databases/user_%s.sqlite", publicId)
+		if _, err := os.Stat(dbPath); os.IsNotExist(err) {
+			continue
+		}
+
 		if err := os.Remove(dbPath); err != nil {
 			return err
 		}
