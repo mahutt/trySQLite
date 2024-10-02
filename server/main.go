@@ -12,18 +12,9 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var db *sql.DB
+var masterDatabase *sql.DB
 
-func initDB(filepath string) error {
-	var err error
-	db, err = sql.Open("sqlite3", filepath)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func getDatabaseInfo() ([]map[string]interface{}, error) {
+func getDatabaseInfo(db *sql.DB) ([]map[string]interface{}, error) {
 	rows, err := db.Query("SELECT name FROM sqlite_master WHERE type='table' AND name != 'sqlite_sequence';")
 	if err != nil {
 		return nil, fmt.Errorf("failed to query tables: %v", err)
@@ -84,7 +75,7 @@ func getDatabaseInfo() ([]map[string]interface{}, error) {
 	return tables, nil
 }
 
-func executeQuery(query string) (map[string]interface{}, error) {
+func executeQuery(db *sql.DB, query string) (map[string]interface{}, error) {
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute query: %v", err)
@@ -97,6 +88,7 @@ func executeQuery(query string) (map[string]interface{}, error) {
 	}
 
 	rawRows := make([][]interface{}, 0)
+	rowCount := 0
 	for rows.Next() {
 		rowValues := make([]interface{}, len(columns))
 		rowPointers := make([]interface{}, len(columns))
@@ -107,28 +99,47 @@ func executeQuery(query string) (map[string]interface{}, error) {
 			return nil, fmt.Errorf("failed to scan row: %v", err)
 		}
 		rawRows = append(rawRows, rowValues)
+		rowCount++
 	}
 
 	result := map[string]interface{}{
-		"columns": columns,
-		"rows":    rawRows,
+		"columns":     columns,
+		"columnCount": len(columns),
+		"rows":        rawRows,
+		"rowCount":    rowCount,
 	}
 
 	return result, nil
 }
 
 func main() {
-	err := initDB("./database.sqlite")
+	var err error
+	masterDatabase, err = getMasterDatabase()
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
+	defer masterDatabase.Close()
 
 	e := echo.New()
 	e.Use(middleware.CORS())
 
 	e.GET("/api", func(c echo.Context) error {
-		tables, err := getDatabaseInfo()
+		databaseId := c.QueryParam("databaseId")
+		if databaseId == "" {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "Missing databaseId query parameter"})
+		}
+
+		err := updateLastQueried(masterDatabase, databaseId)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to update last queried time"})
+		}
+
+		db, err := getDBConnection(databaseId)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
+
+		tables, err := getDatabaseInfo(db)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		}
@@ -137,15 +148,26 @@ func main() {
 
 	e.POST("/api", func(c echo.Context) error {
 		var requestBody struct {
-			Query string `json:"query"`
+			DatabaseId string `json:"databaseId"`
+			Query      string `json:"query"`
 		}
 
 		if err := c.Bind(&requestBody); err != nil {
 			return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
 		}
 
+		err := updateLastQueried(masterDatabase, requestBody.DatabaseId)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to update last queried time"})
+		}
+
+		db, err := getDBConnection(requestBody.DatabaseId)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
+
 		startTime := time.Now()
-		results, err := executeQuery(requestBody.Query)
+		results, err := executeQuery(db, requestBody.Query)
 		executionTime := time.Since(startTime).Milliseconds()
 		response := map[string]interface{}{"executionTime": executionTime}
 		if err != nil {
@@ -155,6 +177,18 @@ func main() {
 
 		response["results"] = results
 		return c.JSON(http.StatusOK, response)
+	})
+
+	e.POST("/api/new", func(c echo.Context) error {
+		deleteStaleDatabases(masterDatabase)
+
+		publicId := generateRandomPublicId()
+		_, err := masterDatabase.Exec("INSERT INTO databases (public_id) VALUES (?)", publicId)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to create new database"})
+		}
+
+		return c.JSON(http.StatusOK, map[string]string{"databaseId": publicId})
 	})
 
 	e.Logger.Fatal(e.Start(":8080"))

@@ -11,6 +11,7 @@ import Logs, { Log } from '@/components/logs'
 import { Table } from '@/components/table'
 
 function App() {
+  const [databaseId, setDatabaseId] = useLocalStorage<string>('database-id', '')
   const [query, setQuery] = useState('')
   const [tab, setTab] = useLocalStorage<string>('current-tab', 'results')
   const [results, setResults] = useState<Table>({
@@ -18,7 +19,7 @@ function App() {
     columns: [],
     rows: [],
   })
-  const [syncing, setSyncing] = useState(true)
+  const [syncing, setSyncing] = useState(false)
   const [database, setDatabase] = useState<Database>({
     tables: [],
   })
@@ -26,7 +27,7 @@ function App() {
 
   useEffect(() => {
     if (!syncing) return
-    fetch(`${import.meta.env.VITE_API_URL}/api`)
+    fetch(`${import.meta.env.VITE_API_URL}/api?databaseId=${databaseId}`)
       .then((response) => response.json())
       .then((data) => setDatabase({ tables: data.tables }))
       .catch((error) => console.error('Error fetching data:', error))
@@ -39,7 +40,7 @@ function App() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ query }),
+      body: JSON.stringify({ databaseId, query }),
     })
       .then((response) => response.json())
       .then((data) => {
@@ -61,6 +62,25 @@ function App() {
       })
       .catch((error) => console.error('Error fetching data:', error))
   }
+
+  useEffect(() => {
+    if (databaseId === '') {
+      fetch(`${import.meta.env.VITE_API_URL}/api/new`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }).then((response) => {
+        if (response.ok) {
+          response.json().then((data) => {
+            setDatabaseId(data.databaseId)
+          })
+        }
+      })
+    } else {
+      setSyncing(true)
+    }
+  }, [databaseId])
 
   return (
     <>
