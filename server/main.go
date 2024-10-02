@@ -129,7 +129,16 @@ func main() {
 			return c.JSON(http.StatusBadRequest, map[string]string{"error": "Missing databaseId query parameter"})
 		}
 
-		err := updateLastQueried(masterDatabase, databaseId)
+		// Return 404 if the user's database does not exist
+		databaseExists, err := databaseExists(masterDatabase, databaseId)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to check if database exists"})
+		}
+		if !databaseExists {
+			return c.JSON(http.StatusNotFound, map[string]string{"error": "Database not found"})
+		}
+
+		err = updateLastQueried(masterDatabase, databaseId)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to update last queried time"})
 		}
@@ -172,7 +181,7 @@ func main() {
 		response := map[string]interface{}{"executionTime": executionTime}
 		if err != nil {
 			response["error"] = err.Error()
-			return c.JSON(http.StatusInternalServerError, response)
+			return c.JSON(http.StatusBadRequest, response)
 		}
 
 		response["results"] = results

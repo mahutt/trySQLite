@@ -54,6 +54,15 @@ func generateRandomPublicId() string {
 	return string(b)
 }
 
+func databaseExists(db *sql.DB, publicId string) (bool, error) {
+	var count int
+	err := db.QueryRow("SELECT COUNT(*) FROM databases WHERE public_id = ?", publicId).Scan(&count)
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
 func updateLastQueried(db *sql.DB, publicId string) error {
 	result, err := db.Exec("UPDATE databases SET last_queried = datetime('now', 'localtime') WHERE public_id = ?", publicId)
 	if err != nil {
