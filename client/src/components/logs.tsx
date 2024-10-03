@@ -24,9 +24,13 @@ export default function Logs({
   return (
     <>
       <div className="flex flex-row gap-2 my-4">
-        <Button onClick={() => setLogs([])}>
-          <TrashIcon className="w-4 h-4 mr-2" />
-          Clear Logs
+        <Button
+          variant="ghost"
+          className="text-gray-500"
+          onClick={() => setLogs([])}
+        >
+          <TrashIcon className="w-4 h-4 mr-1" />
+          Clear
         </Button>
       </div>
       <div className="flex flex-col gap-2">
