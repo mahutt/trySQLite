@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"time"
+	"try-sqlite/database"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -114,7 +115,7 @@ func executeQuery(db *sql.DB, query string) (map[string]interface{}, error) {
 
 func main() {
 	var err error
-	masterDatabase, err = getMasterDatabase()
+	masterDatabase, err = database.GetMasterDatabase()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -130,7 +131,7 @@ func main() {
 		}
 
 		// Return 404 if the user's database does not exist
-		databaseExists, err := databaseExists(masterDatabase, databaseId)
+		databaseExists, err := database.DatabaseExists(masterDatabase, databaseId)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to check if database exists"})
 		}
@@ -138,12 +139,12 @@ func main() {
 			return c.JSON(http.StatusNotFound, map[string]string{"error": "Database not found"})
 		}
 
-		err = updateLastQueried(masterDatabase, databaseId)
+		err = database.UpdateLastQueried(masterDatabase, databaseId)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to update last queried time"})
 		}
 
-		db, err := getDBConnection(databaseId)
+		db, err := database.GetDBConnection(databaseId)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		}
@@ -165,12 +166,12 @@ func main() {
 			return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
 		}
 
-		err := updateLastQueried(masterDatabase, requestBody.DatabaseId)
+		err := database.UpdateLastQueried(masterDatabase, requestBody.DatabaseId)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to update last queried time"})
 		}
 
-		db, err := getDBConnection(requestBody.DatabaseId)
+		db, err := database.GetDBConnection(requestBody.DatabaseId)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		}
@@ -189,12 +190,12 @@ func main() {
 	})
 
 	e.POST("/api/new", func(c echo.Context) error {
-		err := deleteStaleDatabases(masterDatabase)
+		err := database.DeleteStaleDatabases(masterDatabase)
 		if err != nil {
 			fmt.Println("Failed to delete stale databases:", err)
 		}
 
-		publicId := generateRandomPublicId()
+		publicId := database.GenerateRandomPublicId()
 		_, err = masterDatabase.Exec("INSERT INTO databases (public_id) VALUES (?)", publicId)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to create new database"})

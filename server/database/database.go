@@ -1,4 +1,4 @@
-package main
+package database
 
 import (
 	"database/sql"
@@ -10,7 +10,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func getDBConnection(databaseId string) (*sql.DB, error) {
+func GetDBConnection(databaseId string) (*sql.DB, error) {
 	if err := os.MkdirAll("./databases", os.ModePerm); err != nil {
 		return nil, fmt.Errorf("failed to create databases directory: %v", err)
 	}
@@ -19,7 +19,7 @@ func getDBConnection(databaseId string) (*sql.DB, error) {
 	return sql.Open("sqlite3", dbPath)
 }
 
-func getMasterDatabase() (*sql.DB, error) {
+func GetMasterDatabase() (*sql.DB, error) {
 	if err := os.MkdirAll("./databases", os.ModePerm); err != nil {
 		return nil, fmt.Errorf("failed to create databases directory: %v", err)
 	}
@@ -43,7 +43,7 @@ func getMasterDatabase() (*sql.DB, error) {
 	return db, nil
 }
 
-func generateRandomPublicId() string {
+func GenerateRandomPublicId() string {
 	length := 5
 	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	seededRand := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -54,7 +54,7 @@ func generateRandomPublicId() string {
 	return string(b)
 }
 
-func databaseExists(db *sql.DB, publicId string) (bool, error) {
+func DatabaseExists(db *sql.DB, publicId string) (bool, error) {
 	var count int
 	err := db.QueryRow("SELECT COUNT(*) FROM databases WHERE public_id = ?", publicId).Scan(&count)
 	if err != nil {
@@ -63,7 +63,7 @@ func databaseExists(db *sql.DB, publicId string) (bool, error) {
 	return count > 0, nil
 }
 
-func updateLastQueried(db *sql.DB, publicId string) error {
+func UpdateLastQueried(db *sql.DB, publicId string) error {
 	result, err := db.Exec("UPDATE databases SET last_queried = datetime('now', 'localtime') WHERE public_id = ?", publicId)
 	if err != nil {
 		return err
@@ -81,7 +81,7 @@ func updateLastQueried(db *sql.DB, publicId string) error {
 	return nil
 }
 
-func deleteStaleDatabases(db *sql.DB) error {
+func DeleteStaleDatabases(db *sql.DB) error {
 	rows, err := db.Query("SELECT public_id FROM databases WHERE last_queried < datetime('now', '-1 day')")
 	if err != nil {
 		return err
