@@ -28,7 +28,16 @@ function App() {
   useEffect(() => {
     if (!syncing) return
     fetch(`${import.meta.env.VITE_API_URL}/api?databaseId=${databaseId}`)
-      .then((response) => response.json())
+      .then((response) => {
+        if (response.status === 404) {
+          setDatabaseId('')
+          throw new Error('Previous database has gone stale')
+        }
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        return response.json()
+      })
       .then((data) => setDatabase({ tables: data.tables }))
       .catch((error) => console.error('Error fetching data:', error))
       .finally(() => setSyncing(false))

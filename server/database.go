@@ -107,5 +107,49 @@ func deleteStaleDatabases(db *sql.DB) error {
 		return err
 	}
 
+	err = deleteUntrackedDatabaseFiles(db)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func deleteUntrackedDatabaseFiles(db *sql.DB) error {
+	files, err := os.ReadDir("./databases")
+	if err != nil {
+		return err
+	}
+
+	// Get all public ids from the databases table
+	dbPublicIds := make(map[string]struct{})
+	rows, err := db.Query("SELECT public_id FROM databases")
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var publicId string
+		if err := rows.Scan(&publicId); err != nil {
+			return err
+		}
+		dbPublicIds[publicId] = struct{}{}
+	}
+
+	for _, file := range files {
+		fileName := file.Name()
+		if file.IsDir() || fileName == "master.sqlite" {
+			continue
+		}
+		if len(fileName) > 11 && fileName[:5] == "user_" && fileName[len(fileName)-7:] == ".sqlite" {
+			publicId := fileName[5 : len(fileName)-7]
+			if _, exists := dbPublicIds[publicId]; !exists {
+				if err := os.Remove(fmt.Sprintf("./databases/%s", fileName)); err != nil {
+					return err
+				}
+
+			}
+		}
+	}
 	return nil
 }

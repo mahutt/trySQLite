@@ -189,10 +189,13 @@ func main() {
 	})
 
 	e.POST("/api/new", func(c echo.Context) error {
-		deleteStaleDatabases(masterDatabase)
+		err := deleteStaleDatabases(masterDatabase)
+		if err != nil {
+			fmt.Println("Failed to delete stale databases:", err)
+		}
 
 		publicId := generateRandomPublicId()
-		_, err := masterDatabase.Exec("INSERT INTO databases (public_id) VALUES (?)", publicId)
+		_, err = masterDatabase.Exec("INSERT INTO databases (public_id) VALUES (?)", publicId)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to create new database"})
 		}
