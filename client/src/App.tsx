@@ -25,24 +25,6 @@ function App() {
   })
   const [logs, setLogs] = useLocalStorage<Log[]>('query-logs', [])
 
-  useEffect(() => {
-    if (!syncing) return
-    fetch(`${import.meta.env.VITE_API_URL}/api?databaseId=${databaseId}`)
-      .then((response) => {
-        if (response.status === 404) {
-          setDatabaseId('')
-          throw new Error('Previous database has gone stale')
-        }
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
-        return response.json()
-      })
-      .then((data) => setDatabase({ tables: data.tables }))
-      .catch((error) => console.error('Error fetching data:', error))
-      .finally(() => setSyncing(false))
-  }, [syncing])
-
   const runQuery = () => {
     fetch(`${import.meta.env.VITE_API_URL}/api`, {
       method: 'POST',
@@ -73,7 +55,13 @@ function App() {
   }
 
   useEffect(() => {
-    if (databaseId === '') {
+    const url = new URL(window.location.href)
+    const path = url.pathname
+    const sharedDatabaseId = path.startsWith('/') ? path.slice(1) : path
+    if (sharedDatabaseId) {
+      setDatabaseId(sharedDatabaseId)
+      window.history.replaceState(null, '', '/')
+    } else if (databaseId === '') {
       fetch(`${import.meta.env.VITE_API_URL}/api/new`, {
         method: 'POST',
         headers: {
@@ -90,6 +78,24 @@ function App() {
       setSyncing(true)
     }
   }, [databaseId])
+
+  useEffect(() => {
+    if (!syncing) return
+    fetch(`${import.meta.env.VITE_API_URL}/api?databaseId=${databaseId}`)
+      .then((response) => {
+        if (response.status === 404) {
+          setDatabaseId('')
+          throw new Error('Previous database has gone stale')
+        }
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        return response.json()
+      })
+      .then((data) => setDatabase({ tables: data.tables }))
+      .catch((error) => console.error('Error fetching data:', error))
+      .finally(() => setSyncing(false))
+  }, [syncing])
 
   return (
     <>
