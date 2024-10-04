@@ -58,9 +58,8 @@ function App() {
     const url = new URL(window.location.href)
     const path = url.pathname
     const sharedDatabaseId = path.startsWith('/') ? path.slice(1) : path
-    if (sharedDatabaseId) {
+    if (sharedDatabaseId && sharedDatabaseId !== databaseId) {
       setDatabaseId(sharedDatabaseId)
-      window.history.replaceState(null, '', '/')
     } else if (databaseId === '') {
       fetch(`${import.meta.env.VITE_API_URL}/api/new`, {
         method: 'POST',
