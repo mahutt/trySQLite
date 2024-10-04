@@ -129,7 +129,11 @@ function App() {
               <ResultsView results={results} />
             </TabsContent>
             <TabsContent value="database">
-              <DatabaseView database={database} databaseId={databaseId} />
+              <DatabaseView
+                database={database}
+                databaseId={databaseId}
+                setSyncing={setSyncing}
+              />
             </TabsContent>
             <TabsContent value="logs">
               <Logs logs={logs} setLogs={setLogs} />

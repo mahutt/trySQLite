@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"path/filepath"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -76,6 +77,21 @@ func UpdateLastQueried(db *sql.DB, publicId string) error {
 
 	if rowsAffected == 0 {
 		return fmt.Errorf("no rows updated for public_id: %s", publicId)
+	}
+
+	return nil
+}
+
+func ResetDatabase(databaseId string) error {
+	fmt.Println("running")
+	dbPath := filepath.Join("./databases", fmt.Sprintf("user_%s.sqlite", databaseId))
+
+	if _, err := os.Stat(dbPath); os.IsNotExist(err) {
+		return fmt.Errorf("database file does not exist: %s", dbPath)
+	}
+
+	if err := os.Remove(dbPath); err != nil {
+		return fmt.Errorf("failed to remove existing database file: %v", err)
 	}
 
 	return nil

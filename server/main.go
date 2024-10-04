@@ -204,5 +204,23 @@ func main() {
 		return c.JSON(http.StatusOK, map[string]string{"databaseId": publicId})
 	})
 
+	e.POST("/api/reset", func(c echo.Context) error {
+		fmt.Println("end points reached")
+		var requestBody struct {
+			DatabaseId string `json:"databaseId"`
+		}
+
+		if err := c.Bind(&requestBody); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
+		}
+
+		err := database.ResetDatabase(requestBody.DatabaseId)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
+
+		return c.JSON(http.StatusOK, map[string]string{"message": "Database reset successfully"})
+	})
+
 	e.Logger.Fatal(e.Start(":8080"))
 }
