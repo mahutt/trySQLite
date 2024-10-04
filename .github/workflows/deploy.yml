@@ -18,7 +18,7 @@ jobs:
 
       - name: Deploy to Server
         run: |
-          ssh mahutt@trysqlite.com << EOF
+          ssh -t mahutt@trysqlite.com << EOF
             cd /var/www/trySQLite
             git pull origin main
 
