@@ -3,22 +3,42 @@ import { Button } from '@/components/ui/button'
 import TableView, { Table } from '@/components/table'
 import useLocalStorage from 'use-local-storage'
 import { Share1Icon } from '@radix-ui/react-icons'
+import { useState } from 'react'
 
 export interface Database {
   tables: Table[]
 }
 
-export default function DatabaseView({ database }: { database: Database }) {
+export default function DatabaseView({
+  database,
+  databaseId,
+}: {
+  database: Database
+  databaseId: string
+}) {
   const [table, setTable] = useLocalStorage<string>(
     'current-table',
     database.tables[0]?.name ?? 'none'
   )
+  const [shareText, setShareText] = useState<string>('Share')
+  const handleShare = () => {
+    const url = new URL(window.location.href)
+    const port = url.port ? `:${url.port}` : ''
+    const urlToShare = `${url.protocol}//${url.hostname}${port}/${databaseId}`
+    navigator.clipboard.writeText(urlToShare)
+    setShareText('Copied')
+  }
   return (
     <>
       <div className="flex flex-row gap-2 my-4">
-        <Button variant="ghost" className="text-gray-500">
+        <Button
+          variant="ghost"
+          className="text-gray-500"
+          onClick={handleShare}
+          onMouseEnter={() => setShareText('Share')}
+        >
           <Share1Icon className="w-4 h-4 mr-1" />
-          Share
+          {shareText}
         </Button>
       </div>
       <Tabs

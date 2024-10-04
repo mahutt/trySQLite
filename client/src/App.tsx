@@ -124,7 +124,7 @@ function App() {
               <ResultsView results={results} />
             </TabsContent>
             <TabsContent value="database">
-              <DatabaseView database={database} />
+              <DatabaseView database={database} databaseId={databaseId} />
             </TabsContent>
             <TabsContent value="logs">
               <Logs logs={logs} setLogs={setLogs} />
