@@ -75,6 +75,7 @@ export function QueryTextarea({
       onKeyDown={handleKeyDown}
       placeholder="Enter a query"
       style={{ fontFamily: 'monospace' }}
+      className="text-base"
     />
   )
 }
