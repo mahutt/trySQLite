@@ -1,6 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
-import TableView, { Table } from '@/components/table'
+import { Table } from '@/components/table'
+import { DataTable } from './data-table'
 import useLocalStorage from 'use-local-storage'
 import { Share1Icon, SymbolIcon } from '@radix-ui/react-icons'
 import { useState } from 'react'
@@ -86,7 +87,7 @@ export default function DatabaseView({
         </TabsList>
         {database.tables.map((table) => (
           <TabsContent key={table.name} value={table.name}>
-            <TableView table={table} />
+            <DataTable table={table} />
           </TabsContent>
         ))}
       </Tabs>

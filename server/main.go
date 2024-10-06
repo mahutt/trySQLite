@@ -53,7 +53,7 @@ func getDatabaseInfo(db *sql.DB) ([]map[string]interface{}, error) {
 		}
 		defer dataRows.Close()
 
-		tableData := [][]interface{}{}
+		tableData := []map[string]interface{}{}
 		for dataRows.Next() {
 			rowValues := make([]interface{}, len(columns))
 			rowPointers := make([]interface{}, len(columns))
@@ -63,7 +63,12 @@ func getDatabaseInfo(db *sql.DB) ([]map[string]interface{}, error) {
 			if err := dataRows.Scan(rowPointers...); err != nil {
 				return nil, fmt.Errorf("failed to scan row data: %v", err)
 			}
-			tableData = append(tableData, rowValues)
+
+			rowMap := make(map[string]interface{})
+			for i, col := range columns {
+				rowMap[col] = rowValues[i]
+			}
+			tableData = append(tableData, rowMap)
 		}
 
 		tables = append(tables, map[string]interface{}{
