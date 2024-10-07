@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { Textarea } from '@/components/ui/textarea'
+import { Button } from './ui/button'
 import keywords from '@/lib/keywords'
 
 interface QueryTextareaProps {
@@ -68,14 +69,19 @@ export function QueryTextarea({
   }
 
   return (
-    <Textarea
-      ref={textareaRef}
-      value={query}
-      onChange={(e) => setQuery(e.target.value)}
-      onKeyDown={handleKeyDown}
-      placeholder="Enter a query"
-      style={{ fontFamily: 'monospace' }}
-      className="text-base"
-    />
+    <div className="flex flex-col items-end">
+      <Textarea
+        ref={textareaRef}
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        onKeyDown={handleKeyDown}
+        placeholder="Enter a query"
+        style={{ fontFamily: 'monospace' }}
+        className="text-base"
+      />
+      <Button onClick={runQuery} className="mt-2" disabled={query === ''}>
+        Run query
+      </Button>
+    </div>
   )
 }
