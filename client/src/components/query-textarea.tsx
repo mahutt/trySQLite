@@ -3,6 +3,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from './ui/button'
 import keywords from '@/lib/keywords'
 
+import { PlayIcon, TrashIcon } from '@radix-ui/react-icons'
+
 interface QueryTextareaProps {
   query: string
   setQuery: (query: string) => void
@@ -68,8 +70,36 @@ export function QueryTextarea({
     }
   }
 
+  const handleClear = () => {
+    setQuery('')
+    setHistoryIndex(-1)
+    if (textareaRef.current) {
+      textareaRef.current.focus()
+    }
+  }
+
   return (
-    <div className="flex flex-col items-end">
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-row justify-end items-center">
+        <Button
+          onClick={handleClear}
+          variant="ghost"
+          className="text-gray-500"
+          disabled={query === ''}
+        >
+          <TrashIcon className="w-4 h-4 mr-2" />
+          Clear
+        </Button>
+        <Button
+          onClick={runQuery}
+          variant="ghost"
+          className="text-gray-500"
+          disabled={query === ''}
+        >
+          <PlayIcon className="w-4 h-4 mr-2" />
+          Run
+        </Button>
+      </div>
       <Textarea
         ref={textareaRef}
         value={query}
@@ -79,9 +109,6 @@ export function QueryTextarea({
         style={{ fontFamily: 'monospace' }}
         className="text-base"
       />
-      <Button onClick={runQuery} className="mt-2" disabled={query === ''}>
-        Run query
-      </Button>
     </div>
   )
 }
