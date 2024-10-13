@@ -93,7 +93,7 @@ func executeQuery(db *sql.DB, query string) (map[string]interface{}, error) {
 		return nil, fmt.Errorf("failed to get columns: %v", err)
 	}
 
-	rawRows := make([][]interface{}, 0)
+	tableData := []map[string]interface{}{}
 	rowCount := 0
 	for rows.Next() {
 		rowValues := make([]interface{}, len(columns))
@@ -102,16 +102,21 @@ func executeQuery(db *sql.DB, query string) (map[string]interface{}, error) {
 			rowPointers[i] = &rowValues[i]
 		}
 		if err := rows.Scan(rowPointers...); err != nil {
-			return nil, fmt.Errorf("failed to scan row: %v", err)
+			return nil, fmt.Errorf("failed to scan row data: %v", err)
 		}
-		rawRows = append(rawRows, rowValues)
+		rowMap := make(map[string]interface{})
+		for i, col := range columns {
+			rowMap[col] = rowValues[i]
+		}
+		tableData = append(tableData, rowMap)
 		rowCount++
 	}
 
 	result := map[string]interface{}{
+		"name":        "QueryResult",
 		"columns":     columns,
 		"columnCount": len(columns),
-		"rows":        rawRows,
+		"rows":        tableData,
 		"rowCount":    rowCount,
 	}
 

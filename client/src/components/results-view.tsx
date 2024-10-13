@@ -1,4 +1,5 @@
-import TableView, { Table } from '@/components/table'
+import { Table } from '@/components/table'
+import { DataTable } from './data-table'
 
 export default function ResultsView({ results }: { results: Table }) {
   if (results.columns.length === 0) {
@@ -8,5 +9,5 @@ export default function ResultsView({ results }: { results: Table }) {
       </div>
     )
   }
-  return <TableView table={results} />
+  return <DataTable table={results} />
 }
