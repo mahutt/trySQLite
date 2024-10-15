@@ -80,7 +80,9 @@ export function QueryTextarea({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex flex-row justify-end items-center">
+      <div className="flex flex-row items-center">
+        <p className="text-gray-500 text-sm">trySQLite</p>
+        <div className="flex-1" />
         <Button
           onClick={handleClear}
           variant="ghost"
