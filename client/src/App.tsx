@@ -4,7 +4,7 @@ import { QueryTextarea } from './components/query-textarea'
 import ResultsView from '@/components/results-view'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { RocketIcon } from '@radix-ui/react-icons'
+import { ArrowTopRightIcon, RocketIcon } from '@radix-ui/react-icons'
 
 import DatabaseView, { Database } from '@/components/database-view'
 import Logs, { Log } from '@/components/logs'
@@ -98,7 +98,7 @@ function App() {
 
   return (
     <>
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="h-screen max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-between">
         <main className="flex flex-col align-center gap-10 py-10">
           <QueryTextarea
             query={query}
@@ -140,6 +140,16 @@ function App() {
             </TabsContent>
           </Tabs>
         </main>
+        <div className="flex justify-center items-center text-gray-400 py-2">
+          <a
+            href="https://github.com/mahutt/trySQLite"
+            target="_blank"
+            className="group underline hover:text-blue-500 cursor-pointer flex items-center"
+          >
+            Source Code
+            <ArrowTopRightIcon className="h-4 w-4 ml-1 group-hover:-translate-y-0.5 transition-transform" />
+          </a>
+        </div>
       </div>
     </>
   )
